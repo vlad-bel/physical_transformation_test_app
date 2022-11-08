@@ -84,6 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   final loginScreenCubit =
                                       BlocProvider.of<LoginScreenCubit>(
                                           context);
+
                                   loginScreenCubit.login();
                                 }
                               : null,
