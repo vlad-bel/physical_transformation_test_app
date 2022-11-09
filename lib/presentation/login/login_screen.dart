@@ -1,6 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:physical_transformation_test_app/presentation/auth_page/auth_page.dart';
 import 'package:physical_transformation_test_app/presentation/login/cubit/login_cubit.dart';
+import 'package:physical_transformation_test_app/presentation/login/cubit/login_state.dart';
 import 'package:physical_transformation_test_app/util/form_text_field.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
@@ -18,35 +21,91 @@ class _LoginScreenState extends State<LoginScreen> {
       body: ReactiveFormBuilder(
         builder: (BuildContext context, FormGroup formGroup, Widget? child) {
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Physical Transformation Test App",
                   style: TextStyle(fontSize: 18),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 64,
                 ),
-                FormTextField(
+                const FormTextField(
                   name: LoginScreenCubit.loginField,
                   label: "Login",
                 ),
-                SizedBox(height: 8,),
-                FormTextField(
+                const SizedBox(
+                  height: 8,
+                ),
+                const FormTextField(
                   name: LoginScreenCubit.passwordField,
                   label: "Password",
+                  obscureText: true,
                 ),
-                MaterialButton(
-                  onPressed: () {},
+                const SizedBox(
+                  height: 16,
+                ),
+                ReactiveFormConsumer(
+                  builder: (
+                    BuildContext context,
+                    FormGroup formGroup,
+                    Widget? child,
+                  ) {
+                    return BlocConsumer<LoginScreenCubit, LoginState>(
+                      listener: (context, state) {
+                        state.when(
+                          init: () {},
+                          sucess: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const AuthPage(authed: true);
+                                },
+                              ),
+                            );
+                          },
+                          error: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const AuthPage(authed: false);
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      builder: (BuildContext context, state) {
+                        return CupertinoButton(
+                          onPressed: formGroup.valid
+                              ? () {
+                                  final loginScreenCubit =
+                                      BlocProvider.of<LoginScreenCubit>(
+                                          context);
+
+                                  loginScreenCubit.login();
+                                }
+                              : null,
+                          color: Colors.blue,
+                          child: const Text(
+                            "Login",
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 32),
+                const Align(
+                  alignment: Alignment.centerLeft,
                   child: Text(
-                    "Login",
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
+                    "Note: correct creds:\nlogin:admin\npassword:admin",
                   ),
-                  color: Colors.blue,
                 ),
               ],
             ),
@@ -54,7 +113,6 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         form: () {
           final loginScreenCubit = BlocProvider.of<LoginScreenCubit>(context);
-
           return loginScreenCubit.formGroup;
         },
       ),
